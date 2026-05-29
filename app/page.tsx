@@ -1117,7 +1117,7 @@ export default function Home() {
               <div className="grid grid-cols-2 gap-3 mb-6 bg-slate-50 rounded-xl p-3 border border-slate-100/60 text-left select-none">
                 <div>
                   <span className="block text-[9px] text-slate-400 font-bold uppercase tracking-wider">Materiál</span>
-                  <span className="text-slate-800 text-xs font-bold">2D PVC Panel</span>
+                  <span className="text-slate-800 text-xs font-bold">PVC Panel</span>
                 </div>
                 <div>
                   <span className="block text-[9px] text-slate-400 font-bold uppercase tracking-wider">Vlastnosti</span>
@@ -1128,7 +1128,7 @@ export default function Home() {
                   <span className="text-slate-800 text-xs font-bold">Lepidlem na zeď</span>
                 </div>
                 <div>
-                  <span className="block text-[9px] text-slate-400 font-bold uppercase tracking-wider">Akustika</span>
+                  <span className="block text-[9px] text-slate-400 font-bold uppercase tracking-wider">Typ</span>
                   <span className="text-slate-800 text-xs font-bold">Velkoformát</span>
                 </div>
               </div>

@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     }
 
     const resendApiKey = process.env.RESEND_API_KEY;
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+    const fromEmail = process.env.RESEND_FROM_EMAIL || '';
 
     if (!resendApiKey) {
       console.warn('[send-visualization] RESEND_API_KEY is not set. Skipping email delivery.');
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
                   <tr>
                     <td width="50%" style="padding:4px 0;">
                       <span style="display:block;font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">Materiál</span>
-                      <span style="display:block;font-size:14px;color:#0f172a;font-weight:700;margin-top:2px;">3D reliéfní PVC</span>
+                      <span style="display:block;font-size:14px;color:#0f172a;font-weight:700;margin-top:2px;">PVC Panel</span>
                     </td>
                     <td width="50%" style="padding:4px 0;">
                       <span style="display:block;font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">Rozměry</span>
