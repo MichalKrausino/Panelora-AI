@@ -12,34 +12,11 @@ interface Texture {
   bgClass: string; // tailwind gradient fallback for texture thumbnail
 }
 
-interface SampleRoom {
-  id: string;
-  name: string;
-  url: string;
-  type: string;
-}
-
 interface RoomType {
   id: string;
   name: string;
   desc: string;
 }
-
-// --- BUILT-IN SAMPLE ROOMS ---
-const SAMPLE_ROOMS: SampleRoom[] = [
-  {
-    id: 'living-room',
-    name: 'Obývací pokoj',
-    url: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80',
-    type: 'living-room',
-  },
-  {
-    id: 'bedroom',
-    name: 'Ložnice',
-    url: 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80',
-    type: 'bedroom',
-  },
-];
 
 // --- BUILT-IN PVC PANEL TEXTURES (17 MOTIFS) ---
 const TEXTURES: Texture[] = [
@@ -175,6 +152,7 @@ const TEXTURES: Texture[] = [
 const ROOM_TYPES: RoomType[] = [
   { id: 'living-room', name: 'Obývák', desc: 'Moderní skandinávský obývací pokoj' },
   { id: 'bedroom', name: 'Ložnice', desc: 'Útulný a minimalistický ložnicový prostor' },
+  { id: 'kitchen', name: 'Kuchyň', desc: 'Moderní kuchyňský prostor' },
   { id: 'bathroom', name: 'Koupelna', desc: 'Luxusní koupelnový interiér s doplňky' },
   { id: 'rough', name: 'Hrubá stavba', desc: 'Surový betonový / nezařízený prostor' },
 ];
@@ -182,7 +160,6 @@ const ROOM_TYPES: RoomType[] = [
 export default function Home() {
   // --- STATE ---
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [activeSampleId, setActiveSampleId] = useState<string | null>(null);
   const [selectedTexture, setSelectedTexture] = useState<string>('cisty_mramor');
   const [selectedRoomType, setSelectedRoomType] = useState<string>('living-room');
 
@@ -365,47 +342,12 @@ export default function Home() {
     if (!file) return;
 
     try {
-      setActiveSampleId(null);
       const resizedBase64 = await processImageResize(file);
       setSelectedImage(resizedBase64);
       setStagedImageUrl(null); // Reset staged image so user must click run button
       setAppState('IDLE');
     } catch (err: any) {
       setErrorMessage(err.message || 'Nepodařilo se zpracovat obrázek.');
-      setAppState('IDLE');
-    }
-  };
-
-  // Select Pre-made Sample Room (Doesn't call API automatically)
-  const handleSelectSample = async (room: SampleRoom) => {
-    try {
-      setActiveSampleId(room.id);
-      setAppState('LOADING');
-      setLoadingStep('Stahujeme a připravujeme vzorovou místnost...');
-
-      const response = await fetch(room.url);
-      const blob = await response.blob();
-
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Chyba při konverzi vzorové místnosti.'));
-        reader.readAsDataURL(blob);
-      });
-
-      const base64Image = await base64Promise;
-      setSelectedImage(base64Image);
-      setStagedImageUrl(null); // Reset staged image
-
-      let matchedRoomType = 'living-room';
-      if (room.type === 'bedroom') matchedRoomType = 'bedroom';
-      else if (room.type === 'living-room') matchedRoomType = 'living-room';
-      setSelectedRoomType(matchedRoomType);
-
-      setAppState('IDLE');
-    } catch (err: any) {
-      console.error("Error loading sample room:", err);
-      setErrorMessage('Nepodařilo se načíst nebo zpracovat ukázkovou místnost.');
       setAppState('IDLE');
     }
   };
@@ -426,7 +368,6 @@ export default function Home() {
     if (!file) return;
 
     try {
-      setActiveSampleId(null);
       const resizedBase64 = await processImageResize(file);
       setSelectedImage(resizedBase64);
       setStagedImageUrl(null); // Reset staged image
@@ -502,7 +443,6 @@ export default function Home() {
   // Reset visualizer
   const handleReset = () => {
     setSelectedImage(null);
-    setActiveSampleId(null);
     setAppState('IDLE');
     setStagedImageUrl(null);
     setErrorMessage(null);
@@ -521,9 +461,11 @@ export default function Home() {
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200/60 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="text-white font-black px-3.5 py-1.5 rounded-lg text-lg tracking-wider bg-black shadow-sm">
-              PANELORA
-            </div>
+            <img
+              src="/panelora_(5).png"
+              alt="Panelora Logo"
+              className="h-12 md:h-16 w-auto object-contain"
+            />
             <div className="h-6 w-[1px] bg-gray-200 hidden sm:block"></div>
             <span className="text-gray-500 text-xs font-medium hidden sm:block">
               AI interaktivní vizualizátor stěnových panelů
@@ -614,48 +556,6 @@ export default function Home() {
             )}
 
 
-            {/* Nový čistý podnadpis bez efektu tlačítka */}
-            <p className="text-slate-400 text-xs font-medium mt-5 mb-3 text-left pl-1 select-none">
-              Nebo pokračujte výběrem vzorového pokoje:
-            </p>
-
-            {/* Sample Rooms Grid - Touch targets min 44px */}
-            <div className="grid grid-cols-2 gap-3">
-              {SAMPLE_ROOMS.map((room) => (
-                <button
-                  key={room.id}
-                  onClick={() => handleSelectSample(room)}
-                  disabled={appState === 'LOADING'}
-                  className={`group relative h-24 rounded-xl overflow-hidden border text-left transition-all duration-300 focus:outline-none min-h-[48px] cursor-pointer disabled:cursor-not-allowed ${activeSampleId === room.id
-                    ? 'border-slate-900 ring-2 ring-slate-900/10 shadow-md scale-[1.01]'
-                    : 'border-slate-200 hover:border-slate-400 hover:scale-[1.01]'
-                    }`}
-                >
-                  {/* Background Image */}
-                  <img
-                    src={room.url}
-                    alt={room.name}
-                    className="absolute inset-0 w-full h-full object-cover brightness-[0.7] group-hover:brightness-[0.8] transition-all duration-300"
-                  />
-
-                  {/* Bottom Text Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 to-transparent p-2.5 pt-6 flex flex-col justify-end">
-                    <span className="text-white text-xs font-bold tracking-wide drop-shadow truncate">
-                      {room.name}
-                    </span>
-                  </div>
-
-                  {/* Active Pin */}
-                  {activeSampleId === room.id && (
-                    <div className="absolute top-2 right-2 bg-slate-950 text-white p-1 rounded-full shadow">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-3 h-3">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* STEP 2: VIRTUAL STAGING SETTINGS (Room Type Config) */}
@@ -1056,12 +956,7 @@ export default function Home() {
                 Zde uvidíte vaši AI vizualizaci
               </h3>
               <p className="text-slate-500 text-xs max-w-xs leading-relaxed mb-6">
-                Nahrajte fotografii nebo vyberte vzorový pokoj vlevo.
-              </p>
-
-              {/* Čistý textový průvodce se šipkou dolů */}
-              <p className="text-xs font-bold text-slate-400 select-none mt-2 tracking-wide animate-pulse">
-                Nebo zvolte vzorový pokoj níže ↓
+                Nahrajte fotografii pokoje vlevo.
               </p>
             </div>
           )}
